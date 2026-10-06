@@ -15,20 +15,23 @@
 | `Wi-Fi`          | Network communication                                |
 | `Bluetooth`      | Wireless communication                               |
 
-ESP32-S3
-┌───────────────────────────────┐
-│                               │
-│  CPU                          │
-│                               │
-│  RMT    ← timing generator    │
-│  UART   ← serial communication│
-│  SPI    ← SPI communication   │
-│  I2C    ← I2C communication   │
-│  ADC    ← analog measurement  │
-│  PWM    ← pulse generation    │
-│  Timer  ← timing              │
-│                               │
-└───────────────────────────────┘
+### ESP32-S3 Internal Architecture
+
+```text
+┌───────────────────────────────────────┐
+│                                       │
+│  CPU                                  │
+│                                       │
+│  RMT    ← timing generator            │
+│  UART   ← serial communication        │
+│  SPI    ← SPI communication           │
+│  I2C    ← I2C communication           │
+│  ADC    ← analog measurement          │
+│  PWM    ← pulse generation            │
+│  Timer  ← timing                      │
+│                                       │
+└───────────────────────────────────────┘
+```
 
 Peripheral = CPU/GPU/network card inside the computer
 Pin        = USB/Ethernet/HDMI port on the outside
