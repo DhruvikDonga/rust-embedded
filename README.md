@@ -122,29 +122,49 @@ runner = "espflash flash --monitor --chip esp32s3"
 Therefore:
 
 ```text
+
 cargo build
-   ↓
+
+↓
+
 ESP Rust toolchain
-   ↓
+
+↓
+
 Xtensa ESP32-S3 target
-   ↓
+
+↓
+
 Firmware binary
+
 ```
 
 while:
 
 ```text
+
 cargo run
-   ↓
+
+↓
+
 cargo build
-   ↓
+
+↓
+
 espflash
-   ↓
+
+↓
+
 USB
-   ↓
+
+↓
+
 ESP32-S3
-   ↓
+
+↓
+
 Serial monitor
+
 ```
 
 ## ESP32-S3 Architecture
@@ -152,21 +172,37 @@ Serial monitor
 > **Important:** ESP32-S3 uses the **Xtensa LX7** architecture. It is **not RISC-V**, so a RISC-V target such as `riscv32imc-unknown-none-elf` should not be used for this board.
 
 ```text
+
 Rust Application
+
    ↓
+
 esp-hal
+
    ↓
+
 esp-pac
+
    ↓
+
 ESP Rust / Xtensa Toolchain
+
    ↓
+
 Xtensa ESP32-S3 Target
+
    ↓
+
 ESP32-S3
+
    ↓
+
 Xtensa LX7
+
    ↓
+
 Hardware
+
 ```
 
 ## Tool Installation
@@ -499,23 +535,43 @@ For normal development, cargo run can put the chip into the required flashing st
 ## Useful Development Workflow
 
 ```text
+
 1. Install ESP toolchain
-   ↓
+
+    ↓
+
 2. source ~/export-esp.sh
-   ↓
+
+    ↓
+
 3. Create project with esp-generate
-   ↓
+
+    ↓
+
 4. cargo build
-   ↓
+
+    ↓
+
 5. Connect ESP32-S3 over USB
-   ↓
+
+    ↓
+
 6. espflash board-info
-   ↓
+
+    ↓
+
 7. cargo run
-   ↓
+
+    ↓
+
 8. Flash + serial monitor
-   ↓
+
+    ↓
+
 9. Develop GPIO / timers / UART / SPI / I2C
-   ↓
+
+    ↓
+
 10. Wi-Fi / Bluetooth / Embassy / async
+
 ```
