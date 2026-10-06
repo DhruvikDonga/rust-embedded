@@ -1,0 +1,17 @@
+# Rust build targets
+**/target/
+**/debug/
+
+# Editor files
+.vscode/
+.zed/
+.helix/
+.nvim.lua
+*.swp
+*~
+
+# Backups and OS files
+**/*.rs.bk
+*.pdb
+**/.DS_Store
+
