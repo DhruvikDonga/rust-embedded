@@ -2,7 +2,6 @@
 #![no_main]
 extern crate alloc;
 
-use embedded_io_async::Write;
 use esp_hal::rng::Rng;
 use esp_println::println;
 use esp_radio::wifi::{
@@ -10,12 +9,10 @@ use esp_radio::wifi::{
 };
 use static_cell::StaticCell;
 use embassy_net::{
-    tcp::TcpSocket, Config as NetConfig, DhcpConfig, Runner, StackResources,
+    Config as NetConfig, DhcpConfig, Runner, StackResources,
 };
-use alloc::{format, string::String};
 mod ui_view;
-use ui_view::HTML;
-use crate::accel_setup::get_accel_reading;
+mod request_processor;
 
 pub async fn setup_connection(spawner: embassy_executor::Spawner, controller: WifiController<'static>, interfaces: Interfaces<'static> ) {
     // Keep the Wi-Fi controller alive for the connection task.
@@ -71,105 +68,11 @@ pub async fn setup_connection(spawner: embassy_executor::Spawner, controller: Wi
         embassy_time::Timer::after_millis(500).await;
     }
 
-     loop {
-        let mut rx_buffer = [0u8; 1024];
-        let mut tx_buffer = [0u8; 1024];
-
-        let mut socket =
-            TcpSocket::new(stack, &mut rx_buffer, &mut tx_buffer);
-
-        println!("Waiting for browser request...");
-
-        if socket.accept(80).await.is_err() {
-            socket.abort();
-            continue;
-        }
-
-        let mut request = [0u8; 512];
-
-        let request_len = match socket.read(&mut request).await {
-            Ok(n) => n,
-            Err(_) => {
-                socket.abort();
-                continue;
-            }
-        };
-
-        let request_text =
-            core::str::from_utf8(&request[..request_len])
-                .unwrap_or("");
-
-        let (status, content_type, body): (&str, &str, String) =
-            if request_text.starts_with("GET /accel ") {
-                let reading = get_accel_reading();
-
-                if reading.connected {
-                    (
-                        "200 OK",
-                        "application/json",
-                        format!(
-                            concat!(
-                                "{{\"connected\":true,",
-                                "\"x\":{:.3},",
-                                "\"y\":{:.3},",
-                                "\"z\":{:.3},",
-                                "\"magnitude\":{:.3}}}"
-                            ),
-                            reading.x,
-                            reading.y,
-                            reading.z,
-                            reading.magnitude,
-                        ),
-                    )
-                } else {
-                    (
-                        "200 OK",
-                        "application/json",
-                        String::from("{\"connected\":false}"),
-                    )
-                }
-            } else if request_text.starts_with("GET / ") {
-                (
-                    "200 OK",
-                    "text/html; charset=utf-8",
-                    String::from(HTML),
-                )
-            } else {
-                (
-                    "404 Not Found",
-                    "text/plain",
-                    String::from("Not found"),
-                )
-            };
-
-        let header = format!(
-            concat!(
-                "HTTP/1.1 {}\r\n",
-                "Content-Type: {}\r\n",
-                "Content-Length: {}\r\n",
-                "Cache-Control: no-store\r\n",
-                "Connection: close\r\n",
-                "\r\n"
-            ),
-            status,
-            content_type,
-            body.len(),
+    // Start the HTTP request processing task.
+    spawner
+        .spawn(
+            request_processor::request_process(stack).expect("Failed to process request")
         );
-
-        let result = async {
-            socket.write_all(header.as_bytes()).await?;
-            socket.write_all(body.as_bytes()).await?;
-            socket.flush().await
-        }
-        .await;
-
-        if result.is_err() {
-            println!("Failed to send HTTP response");
-        }
-
-        socket.abort();
-    }
-
 }
 
 // Continuously manages the Wi-Fi connection.
@@ -200,3 +103,4 @@ async fn net_task(
 ) {
     runner.run().await;
 }
+
